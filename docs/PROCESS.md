@@ -8,7 +8,7 @@
 - TypeScript: ESLint, Prettier, tsc, and vitest with 80% coverage
 - Playwright end-to-end tests
 
-The pre-commit hook runs the format, lint, type and unit test checks on every commit.
+The pre-commit hook runs the format, lint, type and unit test checks on every commit. You should never disable the hooks.
 
 ## Planning
 
