@@ -137,12 +137,12 @@ The brand is applied as in `docs/BRAND.md`: Instrument Sans for text, JetBrains 
 **Why.** The sign-off rule is what the business will rely on most, so it gets an end-to-end test as well as unit tests. The agent has no end-to-end test because it needs a model; phase 4's live check covers it.
 
 **Success criteria**
-- [ ] `npm run e2e` passes
-- [ ] The test database is a separate file from the development one, so running the tests never changes the queue you work from
-- [ ] `docs/STATUS.md` lists the pilot's routes and says how to run it with `npm run dev`
-- [ ] `npm run dev` starts the backend and the dashboard, and the dashboard's queue loads at `http://localhost:5173`
-- [ ] `npm run check` passes, and I report its output in full
-- [ ] `git status` shows no `.env`, no database file and no `data/evals/` changes
+- [x] `npm run e2e` passes
+- [x] The test database is a separate file from the development one, so running the tests never changes the queue you work from
+- [x] `docs/STATUS.md` lists the pilot's routes and says how to run it with `npm run dev`
+- [x] `npm run dev` starts the backend and the dashboard, and the dashboard's queue loads at `http://localhost:5173`
+- [x] `npm run check` passes, and I report its output in full
+- [x] `git status` shows no `.env`, no database file and no `data/evals/` changes
 
 ## Questions for you to decide
 
