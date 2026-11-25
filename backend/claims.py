@@ -1,6 +1,7 @@
 """The claims queue: each claim's state, and what the dashboard shows of a claim."""
 
 import sqlite3
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import HTTPException
@@ -102,3 +103,125 @@ def claim_view(claim_id: str) -> dict[str, Any]:
             "payments": payments,
             "paid_total": round(sum(payment["amount"] for payment in payments), 2),
         }
+
+
+def _now() -> str:
+    return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def _add_event(conn: sqlite3.Connection, claim_id: str, kind: str, text: str) -> None:
+    conn.execute(
+        "INSERT INTO events (claim_id, kind, text, created_at) VALUES (?, ?, ?, ?)",
+        (claim_id, kind, text, _now()),
+    )
+
+
+def _paid_total(conn: sqlite3.Connection, claim_id: str) -> float:
+    row = conn.execute(
+        "SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE claim_id = ?",
+        (claim_id,),
+    ).fetchone()
+    return round(row["total"], 2)
+
+
+def record_decision(
+    claim_id: str, decision: str, payout: float, explanation: str, policy_section: str
+) -> dict[str, Any]:
+    """Record a claim's decision: approve, decline or refer, with its payout."""
+    with connect() as conn:
+        _claim_row(conn, claim_id)
+        claimed = data.claim(claim_id)["amount_claimed"]
+        if decision == "approve" and not 0 < payout <= claimed:
+            raise HTTPException(
+                422, f"An approval pays more than $0 and no more than ${claimed:,.2f}."
+            )
+        if decision != "approve" and payout != 0:
+            raise HTTPException(422, "Only an approval has a payout.")
+        if _decision(conn, claim_id) is not None:
+            raise HTTPException(409, "This claim already has a decision.")
+        conn.execute(
+            "INSERT INTO decisions "
+            "(claim_id, decision, payout, explanation, policy_section, decided_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (claim_id, decision, payout, explanation, policy_section, _now()),
+        )
+        _add_event(
+            conn,
+            claim_id,
+            "decision",
+            f"{decision.capitalize()}: payout ${payout:,.2f}. {explanation}",
+        )
+        return {
+            "claim_id": claim_id,
+            "decision": decision,
+            "payout": payout,
+            "state": state(conn, claim_id),
+        }
+
+
+def pay_claim(claim_id: str, amount: float) -> dict[str, Any]:
+    """Pay part or all of an approved claim's payout."""
+    with connect() as conn:
+        _claim_row(conn, claim_id)
+        decision = _decision(conn, claim_id)
+        if decision is None or decision["decision"] != "approve":
+            raise HTTPException(409, "Only an approved claim can be paid.")
+        if awaiting_sign_off(decision):
+            limit = data.company()["payout_approval_limit"]
+            raise HTTPException(
+                409, f"This payout is over ${limit:,.2f} and is waiting for sign-off."
+            )
+        paid = _paid_total(conn, claim_id)
+        if amount <= 0 or round(paid + amount, 2) > round(decision["payout"], 2):
+            raise HTTPException(
+                409,
+                f"The payments can't total more than ${decision['payout']:,.2f}.",
+            )
+        conn.execute(
+            "INSERT INTO payments (claim_id, amount, paid_at) VALUES (?, ?, ?)",
+            (claim_id, amount, _now()),
+        )
+        _add_event(conn, claim_id, "payment", f"Paid ${amount:,.2f}.")
+        return {
+            "claim_id": claim_id,
+            "amount": amount,
+            "paid_total": round(paid + amount, 2),
+            "state": state(conn, claim_id),
+        }
+
+
+def sign_off_claim(claim_id: str) -> dict[str, Any]:
+    """Sign off an approval over the payout limit, so that it can be paid."""
+    with connect() as conn:
+        _claim_row(conn, claim_id)
+        decision = _decision(conn, claim_id)
+        if decision is None or not awaiting_sign_off(decision):
+            raise HTTPException(409, "This claim is not waiting for sign-off.")
+        conn.execute(
+            "UPDATE decisions SET signed_off_at = ? WHERE claim_id = ?",
+            (_now(), claim_id),
+        )
+        _add_event(conn, claim_id, "sign_off", "Signed off by a handler.")
+        return {"claim_id": claim_id, "state": state(conn, claim_id)}
+
+
+def add_event(claim_id: str, text: str) -> dict[str, Any]:
+    """Add a step to a claim's activity log."""
+    with connect() as conn:
+        _claim_row(conn, claim_id)
+        _add_event(conn, claim_id, "step", text)
+        return {"claim_id": claim_id, "text": text}
+
+
+def list_events(claim_id: str) -> list[dict[str, Any]]:
+    """Return a claim's activity log, oldest first."""
+    with connect() as conn:
+        _claim_row(conn, claim_id)
+        return [
+            dict(row)
+            for row in conn.execute(
+                "SELECT kind, text, created_at FROM events "
+                "WHERE claim_id = ? ORDER BY id",
+                (claim_id,),
+            )
+        ]

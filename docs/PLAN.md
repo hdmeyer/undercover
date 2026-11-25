@@ -71,14 +71,14 @@ Every operation has an `operation_id`, a one-line docstring and no optional inpu
 **Why.** The payment rule is the one hard rule in the spec, so the backend enforces it, not the agent or the dashboard. Putting it in the backend means no caller can get around it.
 
 **Success criteria**
-- [ ] Tests cover each rule: a second decision is refused, a payout over the amount claimed is refused, a payment on a declined claim is refused, and a payment over $1,000 is refused until sign-off
-- [ ] `uv run pytest -q` passes, with coverage of at least 80%
-- [ ] `curl -s -X POST localhost:8000/api/claims/CLM-1001/decision -H "Content-Type: application/json" -d '{"decision":"approve","payout":420,"explanation":"...","policy_section":"3"}'` returns 200, and the claim's state becomes `decided`
-- [ ] `curl -s -X POST localhost:8000/api/claims/CLM-1001/payments -H "Content-Type: application/json" -d '{"amount":420}'` returns 200
-- [ ] On a claim approved for more than $1,000 (for example CLM-1002, which claims $1,150.00), `POST .../payments` returns 409 with a message that the claim is waiting for sign-off, and the state reads `waiting for sign-off`
-- [ ] After `POST .../sign-off`, the same payment returns 200
-- [ ] `curl -s localhost:8000/api/claims/CLM-1001/events` lists the decision and the payment, in that order
-- [ ] `npm run check:python` passes
+- [x] Tests cover each rule: a second decision is refused, a payout over the amount claimed is refused, a payment on a declined claim is refused, and a payment over $1,000 is refused until sign-off
+- [x] `uv run pytest -q` passes, with coverage of at least 80%
+- [x] `curl -s -X POST localhost:8000/api/claims/CLM-1001/decision -H "Content-Type: application/json" -d '{"decision":"approve","payout":420,"explanation":"...","policy_section":"3"}'` returns 200, and the claim's state becomes `decided`
+- [x] `curl -s -X POST localhost:8000/api/claims/CLM-1001/payments -H "Content-Type: application/json" -d '{"amount":420}'` returns 200
+- [x] On a claim approved for more than $1,000 (for example CLM-1002, which claims $1,150.00), `POST .../payments` returns 409 with a message that the claim is waiting for sign-off, and the state reads `waiting for sign-off`
+- [x] After `POST .../sign-off`, the same payment returns 200
+- [x] `curl -s localhost:8000/api/claims/CLM-1001/events` lists the decision and the payment, in that order
+- [x] `npm run check:python` passes
 
 ## Phase 3: the agent's tools, instructions and entry point
 

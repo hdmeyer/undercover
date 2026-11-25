@@ -83,5 +83,10 @@ def test_every_operation_has_an_operation_id_and_summary():
         "get_claim_for_agent",
         "get_policy_wording",
         "get_agent_instructions",
+        "record_decision",
+        "pay_claim",
+        "sign_off_claim",
+        "add_event",
+        "list_events",
     }
     assert all(op["summary"] for op in operations)
