@@ -51,18 +51,18 @@ Every operation has an `operation_id`, a one-line docstring and no optional inpu
 **Why.** Reading is the safe place to start: it lets us check the data before anything writes to it. Keeping reference data in the files, not in the database, keeps `data/` as the one source of truth, as the spec says. Building the agent's view in one module means the privacy rule lives in one place and is tested in one place.
 
 **Success criteria**
-- [ ] `uv run pytest -q` passes, with coverage of at least 80%
-- [ ] `uv run pyright` and `uv run ruff check` and `uv run ruff format --check` pass
-- [ ] `curl -s localhost:8000/api/claims` returns 25 claims, each with `state` equal to `waiting`
-- [ ] `curl -s localhost:8000/api/claims/CLM-1001` returns the claim's story, its three items, its documents, the policy and the customer's name
-- [ ] `curl -s localhost:8000/api/agent/claims/CLM-1001` returns the plan `premium` with a `deductible` of 50, a `trip_delay_max` of 800 and a `traveler_count` of 1
-- [ ] `curl -s localhost:8000/api/agent/claims/CLM-1001` contains no customer name, email, phone, date of birth, address or nationality
-- [ ] A test loops over all 25 claims and checks that `/api/agent/claims/{id}` contains none of the customer or traveler names in `data/customers.json` and `data/policies.json`, and no "Date of birth" or "Nationality" line
-- [ ] `curl -s localhost:8000/api/claims/CLM-1001` still shows the customer's name, since the handlers see it
-- [ ] `curl -s localhost:8000/api/policy-wording` returns text that starts with "UnderCover Travel Insurance: Policy Wording"
-- [ ] `curl -s localhost:8000/api/claims/CLM-9999` returns 404
-- [ ] `curl -s localhost:8000/openapi.json` lists the operation_ids from the table above, each with a summary
-- [ ] `grep -r "evals" backend agent` finds nothing outside the tests
+- [x] `uv run pytest -q` passes, with coverage of at least 80%
+- [x] `uv run pyright` and `uv run ruff check` and `uv run ruff format --check` pass
+- [x] `curl -s localhost:8000/api/claims` returns 25 claims, each with `state` equal to `waiting`
+- [x] `curl -s localhost:8000/api/claims/CLM-1001` returns the claim's story, its three items, its documents, the policy and the customer's name
+- [x] `curl -s localhost:8000/api/agent/claims/CLM-1001` returns the plan `premium` with a `deductible` of 50, a `trip_delay_max` of 800 and a `traveler_count` of 1
+- [x] `curl -s localhost:8000/api/agent/claims/CLM-1001` contains no customer name, email, phone, date of birth, address or nationality
+- [x] A test loops over all 25 claims and checks that `/api/agent/claims/{id}` contains none of the customer or traveler names in `data/customers.json` and `data/policies.json`, and no "Date of birth" or "Nationality" line
+- [x] `curl -s localhost:8000/api/claims/CLM-1001` still shows the customer's name, since the handlers see it
+- [x] `curl -s localhost:8000/api/policy-wording` returns text that starts with "UnderCover Travel Insurance: Policy Wording"
+- [x] `curl -s localhost:8000/api/claims/CLM-9999` returns 404
+- [x] `curl -s localhost:8000/openapi.json` lists the operation_ids from the table above, each with a summary
+- [x] `grep -r "evals" backend agent` finds nothing outside the tests
 
 ## Phase 2: decisions, payments and sign-off
 
