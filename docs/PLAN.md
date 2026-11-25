@@ -87,15 +87,15 @@ Every operation has an `operation_id`, a one-line docstring and no optional inpu
 **Why.** The agent reaches the business only through the backend, so the rules in phase 2 apply to it, and what it does is visible on the claim. Tests run against a stub model, so a test never calls OpenRouter and never costs money.
 
 **Success criteria**
-- [ ] `uv run pytest -q` passes, with coverage of at least 80%. The tests use a stub chat model that returns scripted tool calls, and they never call OpenRouter
-- [ ] A test runs the agent on CLM-1001 with a stub model that approves at 420 and pays. Afterwards the claim is `decided` with the payment recorded, and the activity log shows each tool call in order
-- [ ] A test runs the agent on a claim over the limit, where the stub tries to pay. The payment is refused with 409 and the claim reads `waiting for sign-off`
-- [ ] A test records every message the stub model receives during the CLM-1001 run, and none contains a customer or traveler name, an email, a phone number or a date of birth
-- [ ] A test checks that the agent's tools call only `/api/agent/...` routes and the three write routes, never `/api/claims/{id}`
-- [ ] A test checks that the responses of `record_decision`, `pay_claim` and `add_event`, as the agent receives them, contain no customer or traveler name
-- [ ] A test checks that after the CLM-1001 run, `GET /api/claims/CLM-1001` still returns the customer's name, and the activity log is stored in full
-- [ ] The agent's system prompt equals the text of `GET /api/agent/instructions` (a test checks this)
-- [ ] `npm run check:python` passes
+- [x] `uv run pytest -q` passes, with coverage of at least 80%. The tests use a stub chat model that returns scripted tool calls, and they never call OpenRouter
+- [x] A test runs the agent on CLM-1001 with a stub model that approves at 420 and pays. Afterwards the claim is `decided` with the payment recorded, and the activity log shows each tool call in order
+- [x] A test runs the agent on a claim over the limit, where the stub tries to pay. The payment is refused with 409 and the claim reads `waiting for sign-off`
+- [x] A test records every message the stub model receives during the CLM-1001 run, and none contains a customer or traveler name, an email, a phone number or a date of birth
+- [x] A test checks that the agent's tools call only `/api/agent/...` routes and the three write routes, never `/api/claims/{id}`
+- [x] A test checks that the responses of `record_decision`, `pay_claim` and `add_event`, as the agent receives them, contain no customer or traveler name
+- [x] A test checks that after the CLM-1001 run, `GET /api/claims/CLM-1001` still returns the customer's name, and the activity log is stored in full
+- [x] The agent's system prompt equals the text of `GET /api/agent/instructions` (a test checks this)
+- [x] `npm run check:python` passes
 
 ## Phase 4: running the agent from the backend
 
