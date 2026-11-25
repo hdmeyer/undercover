@@ -88,5 +88,7 @@ def test_every_operation_has_an_operation_id_and_summary():
         "sign_off_claim",
         "add_event",
         "list_events",
+        "run_claim",
+        "run_queue",
     }
     assert all(op["summary"] for op in operations)

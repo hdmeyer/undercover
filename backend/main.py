@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from backend import agent_view, claims, data
+from backend import agent_view, claims, data, runs
 
 app = FastAPI(title="UnderCover")
 
@@ -101,3 +101,16 @@ def add_event(claim_id: str, body: EventIn) -> dict[str, Any]:
 def list_events(claim_id: str) -> list[dict[str, Any]]:
     """List a claim's activity log, oldest first."""
     return claims.list_events(claim_id)
+
+
+@app.post("/api/claims/{claim_id}/run", operation_id="run_claim", status_code=202)
+def run_claim(claim_id: str) -> dict[str, Any]:
+    """Start the agent on one claim, in the background."""
+    runs.start(claim_id)
+    return {"claim_id": claim_id, "state": "in progress"}
+
+
+@app.post("/api/runs", operation_id="run_queue", status_code=202)
+def run_queue() -> dict[str, Any]:
+    """Start the agent on each waiting claim, one after another, in the background."""
+    return {"waiting": runs.start_queue()}

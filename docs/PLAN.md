@@ -104,11 +104,11 @@ Every operation has an `operation_id`, a one-line docstring and no optional inpu
 **Why.** An agent run takes a while, so the dashboard should not wait on it. One run at a time keeps the cost and the rate limits predictable.
 
 **Success criteria**
-- [ ] Tests cover: a run starts and returns 202; a second run on the same claim returns 409 while the first is going; a run that raises leaves the claim `waiting` with an error in its activity log
-- [ ] `uv run pytest -q` passes, with coverage of at least 80%
-- [ ] `curl -s -X POST localhost:8000/api/claims/CLM-1001/run` returns 202, and a `curl -s localhost:8000/api/claims/CLM-1001` shortly after shows `in progress`
-- [ ] Live check, with the default model: once the run on CLM-1001 finishes, the claim has a decision with a payout no higher than its $420.00 claim, an explanation of two or three sentences with a policy section, and an activity log with the tool calls. The check reads only the decision the agent records, never `data/evals/`. This costs a few cents of OpenRouter credit. Use `MODEL_NAME=openrouter/free` to run it free
-- [ ] `npm run check:python` passes
+- [x] Tests cover: a run starts and returns 202; a second run on the same claim returns 409 while the first is going; a run that raises leaves the claim `waiting` with an error in its activity log
+- [x] `uv run pytest -q` passes, with coverage of at least 80%
+- [x] `curl -s -X POST localhost:8000/api/claims/CLM-1001/run` returns 202, and a `curl -s localhost:8000/api/claims/CLM-1001` shortly after shows `in progress`
+- [x] Live check, with the default model: once the run on CLM-1001 finishes, the claim has a decision with a payout no higher than its $420.00 claim, an explanation of two or three sentences with a policy section, and an activity log with the tool calls. The check reads only the decision the agent records, never `data/evals/`. This costs a few cents of OpenRouter credit. Use `MODEL_NAME=openrouter/free` to run it free
+- [x] `npm run check:python` passes
 
 ## Phase 5: the dashboard
 

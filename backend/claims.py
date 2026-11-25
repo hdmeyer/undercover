@@ -225,3 +225,34 @@ def list_events(claim_id: str) -> list[dict[str, Any]]:
                 (claim_id,),
             )
         ]
+
+
+def has_decision(claim_id: str) -> bool:
+    """Return True when the claim already has a decision."""
+    with connect() as conn:
+        return _decision(conn, claim_id) is not None
+
+
+def record_event(claim_id: str, kind: str, text: str) -> None:
+    """Add an event of any kind to a claim's activity log."""
+    with connect() as conn:
+        _add_event(conn, claim_id, kind, text)
+
+
+def start_run(claim_id: str) -> None:
+    """Mark a claim in progress, unless it is already in progress or decided."""
+    require_claim(claim_id)
+    with connect() as conn:
+        started = conn.execute(
+            "UPDATE claims SET running = 1 WHERE claim_id = ? AND running = 0 "
+            "AND claim_id NOT IN (SELECT claim_id FROM decisions)",
+            (claim_id,),
+        ).rowcount
+    if not started:
+        raise HTTPException(409, "This claim is already in progress or decided.")
+
+
+def finish_run(claim_id: str) -> None:
+    """Mark a claim no longer in progress."""
+    with connect() as conn:
+        conn.execute("UPDATE claims SET running = 0 WHERE claim_id = ?", (claim_id,))

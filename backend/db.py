@@ -46,16 +46,17 @@ def database_path() -> Path:
 
 @contextmanager
 def connect() -> Iterator[sqlite3.Connection]:
-    """Open the store, create its tables and queue, and commit when the block ends."""
+    """Open the store, creating its tables and queue if empty, and commit on exit."""
     conn = sqlite3.connect(database_path())
     conn.row_factory = sqlite3.Row
     try:
         conn.executescript(SCHEMA)
         with conn:
-            conn.executemany(
-                "INSERT OR IGNORE INTO claims (claim_id) VALUES (?)",
-                [(claim["claim_id"],) for claim in data.claims()],
-            )
+            if conn.execute("SELECT 1 FROM claims LIMIT 1").fetchone() is None:
+                conn.executemany(
+                    "INSERT INTO claims (claim_id) VALUES (?)",
+                    [(claim["claim_id"],) for claim in data.claims()],
+                )
             yield conn
     finally:
         conn.close()

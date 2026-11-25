@@ -1,13 +1,16 @@
 """Reads UnderCover's business records from data/ and the agent's instructions."""
 
 import json
+from functools import cache
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
+@cache
 def _json(name: str) -> Any:
+    """Read a JSON file from data/. The records never change while the backend runs."""
     return json.loads((ROOT / "data" / name).read_text(encoding="utf-8"))
 
 
