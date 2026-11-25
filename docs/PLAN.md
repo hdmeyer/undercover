@@ -122,13 +122,13 @@ The brand is applied as in `docs/BRAND.md`: Instrument Sans for text, JetBrains 
 **Why.** The handlers need to see the queue, each claim in full, and what the agent is doing on it, and the spec lists exactly those three screens.
 
 **Success criteria**
-- [ ] `npm run check:ts` passes, with coverage of at least 80%
-- [ ] In the Playwright MCP browser at 1280 px wide, the queue shows 25 rows, and the state chips use the brand colors
+- [x] `npm run check:ts` passes, with coverage of at least 80%
+- [x] In the Playwright MCP browser at 1280 px wide, the queue shows 25 rows, and the state chips use the brand colors
 - [ ] The claim page for CLM-1001 shows the story, the three items and the three documents, and the amounts read like "$420.00"
-- [ ] At a phone width of 390 px, the queue and the claim page have no horizontal scroll (check `document.documentElement.scrollWidth` equals the viewport width)
-- [ ] The claim page for an over-limit claim shows "Waiting for sign-off" and the "Pay" button is disabled until the sign-off is done
-- [ ] The instructions page shows the text from `GET /api/agent/instructions` and has no edit controls
-- [ ] In dark mode (set with `browser_emulate_media`), the page background is `#04232E` and the panels are black
+- [x] At a phone width of 390 px, the queue and the claim page have no horizontal scroll (check `document.documentElement.scrollWidth` equals the viewport width)
+- [x] The claim page for an over-limit claim shows "Waiting for sign-off" and the "Pay" button is disabled until the sign-off is done
+- [x] The instructions page shows the text from `GET /api/agent/instructions` and has no edit controls
+- [x] In dark mode (set with `browser_emulate_media`), the page background is `#04232E` and the panels are black
 
 ## Phase 6: end-to-end tests and handover
 
