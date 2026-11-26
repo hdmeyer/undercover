@@ -22,5 +22,6 @@
       "nodeGypDependencies": true
     }
   },
+  "forwardPorts": [5173, 8000],
   "postCreateCommand": "pip install --upgrade pip && curl -LsSf https://astral.sh/uv/install.sh | sh"
 }
