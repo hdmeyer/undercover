@@ -10,7 +10,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
-from agent import tools
+from agent import headless, tools
 
 load_dotenv(override=True)
 
@@ -50,6 +50,8 @@ def run(claim_id: str, thread_id: str, llm: BaseChatModel | None = None) -> str:
     """Run the agent on one claim and return its final reply."""
     with tools.backend() as client:
         instructions = client.get("/api/agent/instructions").text
+    if os.getenv("MODEL_NAME") == headless.HEADLESS:
+        return headless.run(claim_id, instructions)
     agent = create_agent(
         llm or model(),
         tools=tools.make_tools(claim_id),

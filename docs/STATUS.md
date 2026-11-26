@@ -19,3 +19,11 @@ The claims pilot from `docs/PLAN.md` is built.
 Run `uv sync` and `npm install` once, then `npm run dev`. The dashboard is at `http://localhost:5173` and the backend at `http://localhost:8000`.
 
 The agent calls OpenRouter with the key in `.env`. To run it free, set `MODEL_NAME=openrouter/free`.
+
+To run the agent on your local Claude Code CLI instead, with no API key, set `MODEL_NAME=claude-headless` in `.env`. The agent then runs Claude Haiku 5.5 through the Claude Agent SDK (`agent/headless.py`), which starts the `claude` command logged in on this machine, in place of the LangChain chat model over HTTP. The agent's tools and log entries are unchanged. Remove the line, or set another model, to go back to OpenRouter.
+
+To call Claude Haiku 5.5 from code, use `agent/claude.py`: `from agent.claude import predict` and `predict(prompt)` runs `claude -p --model claude-haiku-5-5` and returns its reply.
+
+
+## Testing outputs
+ `npm run validate_outputs`. It compares the agent's decision and payout for each claim in the queue with the handlers' answers in data/evals/decisions.json, and prints the mismatches and totals.
