@@ -1,36 +1,38 @@
 """The UnderCover Agent."""
 
 import os
+from typing import Any
 
-import httpx
 from dotenv import load_dotenv
 from langchain.agents import create_agent
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseChatModel
-from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
+from agent import headless, tools
+
 load_dotenv(override=True)
 
-BACKEND_URL = "http://localhost:8000"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = "openai/gpt-6-luna"
-SYSTEM_PROMPT = """You are the UnderCover Agent.
-Check that the backend is running, then say hello."""
 
 
-def backend() -> httpx.Client:
-    """Return a client for the UnderCover backend."""
-    return httpx.Client(base_url=BACKEND_URL, timeout=10)
+class ActivityLog(BaseCallbackHandler):
+    """Writes each tool call on a claim to the claim's activity log."""
 
+    def __init__(self, claim_id: str) -> None:
+        self.claim_id = claim_id
 
-@tool
-def check_backend() -> str:
-    """Check whether the UnderCover backend is running."""
-    with backend() as client:
-        response = client.get("/api/health")
-    response.raise_for_status()
-    return response.json()["status"]
+    def on_tool_start(
+        self, serialized: dict[str, Any] | None, input_str: str, **kwargs: Any
+    ) -> None:
+        name = (serialized or {}).get("name", "tool")
+        with tools.backend() as client:
+            client.post(
+                f"/api/claims/{self.claim_id}/events",
+                json={"text": f"Called {name} with {input_str}."},
+            )
 
 
 def model() -> ChatOpenAI:
@@ -46,11 +48,20 @@ def model() -> ChatOpenAI:
 
 def run(claim_id: str, thread_id: str, llm: BaseChatModel | None = None) -> str:
     """Run the agent on one claim and return its final reply."""
+    with tools.backend() as client:
+        instructions = client.get("/api/agent/instructions").text
+    if os.getenv("MODEL_NAME") == headless.HEADLESS:
+        return headless.run(claim_id, instructions)
     agent = create_agent(
-        llm or model(), tools=[check_backend], system_prompt=SYSTEM_PROMPT
+        llm or model(),
+        tools=tools.make_tools(claim_id),
+        system_prompt=instructions,
     )
     result = agent.invoke(
-        {"messages": [{"role": "user", "content": f"Claim {claim_id}"}]},
-        config={"configurable": {"thread_id": thread_id}},
+        {"messages": [{"role": "user", "content": f"Work claim {claim_id}."}]},
+        config={
+            "configurable": {"thread_id": thread_id},
+            "callbacks": [ActivityLog(claim_id)],
+        },
     )
     return result["messages"][-1].text
